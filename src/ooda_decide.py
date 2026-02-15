@@ -35,7 +35,7 @@ def ensure_decide_table(conn) -> None:
 	conn.commit()
 
 
-def fetch_recent_orient_with_raw(db_path: str, brand: str, limit: int = 10) -> List[Dict]:
+def fetch_recent_orient_with_raw(db_path: str, brand: str, limit: int = 20) -> List[Dict]:
 	"""
 	Prende gli ultimi orient (max 30) entro 7 giorni, arricchiti con title/url/snippet da items_raw.
 	"""
@@ -228,7 +228,7 @@ def main():
 		print("OPENAI API ERROR:", str(e))
 		raise
 
-	records = fetch_recent_orient_with_raw(db_path, brand, limit=30)
+	records = fetch_recent_orient_with_raw(db_path, brand, limit=20)
 	if not records:
 		print("No ORIENT records found. Run ORIENT first.")
 		return

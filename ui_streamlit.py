@@ -192,9 +192,11 @@ st.markdown(
 # Simple password gate (password set via APP_PASSWORD in env or Streamlit secrets)
 if APP_PASSWORD:
 	if not st.session_state["authed"]:
-		pwd_input = st.text_input("Enter access password to use the app", type="password")
+		pwd_input = st.text_input("Enter access password to use the app", type="password", key="app_pwd")
 		if pwd_input == APP_PASSWORD:
 			st.session_state["authed"] = True
+			st.session_state["app_pwd"] = ""
+			st.experimental_rerun()
 		elif pwd_input:
 			st.error("Incorrect password.")
 			st.stop()

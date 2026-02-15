@@ -15,6 +15,7 @@ import streamlit as st
 st.session_state.setdefault("brief_docx", None)
 st.session_state.setdefault("brief_txt", None)
 st.session_state.setdefault("brief_brand", None)
+st.session_state.setdefault("authed", False)
 
 load_dotenv()
 
@@ -24,6 +25,8 @@ if "OPENAI_API_KEY" not in os.environ and "OPENAI_API_KEY" in st.secrets:
 # pass Postgres URL from Streamlit secrets to env for subprocesses
 if "POSTGRES_URL" not in os.environ and "POSTGRES_URL" in st.secrets:
 	os.environ["POSTGRES_URL"] = st.secrets["POSTGRES_URL"]
+
+APP_PASSWORD = os.getenv("APP_PASSWORD") or st.secrets.get("APP_PASSWORD", "")
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 ORCH = PROJECT_ROOT / "src" / "orchestrator.py"
@@ -179,12 +182,23 @@ st.markdown(
 	"for detecting reputational threats."
 )
 st.markdown(
-	"OODA Loop, briefly: a fast decision cycle by Col. John Boyd built to outpace opponents in "
+	"OODA Loop, briefly: a fast decision cycle built to outpace opponents in "
 	"volatile environments. The four stages **Observe, Orient, Decide, Act** repeat continuously: "
 	"you watch signals, interpret them, choose a response, act, then immediately ingest the new "
 	"feedback for the next loop. Use it in crises, competitive markets, or incident response when "
 	"speed and adaptation are the main advantage."
 )
+
+# Simple password gate (password set via APP_PASSWORD in env or Streamlit secrets)
+if not st.session_state["authed"]:
+	pwd_input = st.text_input("Enter access password to use the app", type="password")
+	if APP_PASSWORD and pwd_input == APP_PASSWORD:
+		st.session_state["authed"] = True
+	elif pwd_input:
+		st.error("Incorrect password.")
+		st.stop()
+	else:
+		st.stop()
 
 brand = st.text_input("Brand", value=os.getenv("BRAND", "Apple")).strip()
 

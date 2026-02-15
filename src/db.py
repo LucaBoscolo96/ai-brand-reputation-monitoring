@@ -31,6 +31,35 @@ def _adapt_sql(sql: str, remote: bool) -> str:
 	return s
 
 
+class ProxyCursor:
+	def __init__(self, cur):
+		self._cur = cur
+
+	def execute(self, sql, params=()):
+		sql = _adapt_sql(sql, True)
+		return self._cur.execute(sql, params)
+
+	def executemany(self, sql, seq):
+		sql = _adapt_sql(sql, True)
+		return self._cur.executemany(sql, seq)
+
+	def __getattr__(self, name):
+		return getattr(self._cur, name)
+
+
+class ProxyConn:
+	def __init__(self, conn):
+		self._conn = conn
+		self.autocommit = True
+
+	def cursor(self, *args, **kwargs):
+		cur = self._conn.cursor(cursor_factory=RealDictCursor, *args, **kwargs)
+		return ProxyCursor(cur)
+
+	def __getattr__(self, name):
+		return getattr(self._conn, name)
+
+
 def get_conn(db_path: str):
 	if is_remote():
 		if psycopg2 is None:
@@ -44,7 +73,7 @@ def get_conn(db_path: str):
 				url += "?sslmode=require"
 		conn = psycopg2.connect(url)
 		conn.autocommit = True
-		return conn
+		return ProxyConn(conn)
 
 	# local sqlite fallback
 	Path(db_path).parent.mkdir(parents=True, exist_ok=True)

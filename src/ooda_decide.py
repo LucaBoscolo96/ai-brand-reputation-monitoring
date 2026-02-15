@@ -14,6 +14,7 @@ MODEL = "gpt-5-mini"
 
 
 INTENT_ENUM = ["THREAT", "DEFENSE", "NEUTRAL", "OPPORTUNITY", "NOISE"]
+FACT_CHECK_ENUM = ["verified", "disinformation", "uncertain"]
 
 
 def get_brand(cfg: Dict) -> str:
@@ -126,7 +127,8 @@ TASK:
 1) Interpret the INTENT / FRAMING of the article toward the brand.
 2) Select exactly ONE intent_framing label.
 3) Decide urgency and escalation_team with strict rules below.
-4) Output ONLY valid JSON matching the required schema.
+4) Perform a quick fact-check classification (verified vs disinformation vs uncertain) based ONLY on the snippet/title evidence.
+5) Output ONLY valid JSON matching the required schema.
 
 ALLOWED intent_framing (pick ONE):
 - THREAT: the brand is accused, investigated, blamed, harmed, or faces boycott/controversy targeting the brand.
@@ -161,7 +163,9 @@ Return ONLY valid JSON with EXACTLY these fields:
   "urgency": "low|medium|high",
   "escalation_team": ["PR","Legal","Security","Exec"],
   "rationale": "2-3 sentences referencing the snippet/claim_summary (no external facts)",
-  "no_regret_move": "one concrete step that is safe in most cases"
+  "no_regret_move": "one concrete step that is safe in most cases",
+  "fact_check_status": "verified|disinformation|uncertain",
+  "fact_check_rationale": "1-2 sentences explaining why the status was chosen, based on snippet/title only"
 }}
 
 QUALITY CHECK BEFORE FINAL:
@@ -198,6 +202,14 @@ def decide_one(client: OpenAI, brand: str, raw: Dict, orient: Dict) -> Dict:
 	team = obj.get("escalation_team", [])
 	if not isinstance(team, list):
 		obj["escalation_team"] = []
+
+	# fact-check normalization
+	fc = str(obj.get("fact_check_status", "uncertain")).lower()
+	if fc not in FACT_CHECK_ENUM:
+		fc = "uncertain"
+	obj["fact_check_status"] = fc
+	if "fact_check_rationale" not in obj or not obj["fact_check_rationale"]:
+		obj["fact_check_rationale"] = "Not enough evidence in snippet/title; mark as uncertain."
 
 	return obj
 

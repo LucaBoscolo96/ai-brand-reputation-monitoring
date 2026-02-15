@@ -235,20 +235,37 @@ def build_act_prompt(brand: str, stats: Dict, items: List[Dict]) -> str:
 	}
 
 	return f"""
-You are an executive crisis-response coordinator.
-You MUST operationalize the OODA Loop.
-We are now in the ACT phase.
+ROLE: You are the ACT module of an OODA Loop AI early-warning system for brand reputation monitoring.
+You are an executive coordinator producing an action package.
 
-Brand: {brand}
+FRAMEWORK CONSTRAINT (ACT ONLY):
+- This is ACT: convert prior decisions into an executable plan for the next 4 hours.
+- Do NOT reclassify items. Do NOT invent new facts. Use ONLY the input JSON provided (stats + items_sample + rules).
+- If information is insufficient, explicitly choose conservative 'no-regret' actions and monitoring.
 
-Goal:
-Produce ONE aggregated action package for the next 4 hours, grounded in the input data.
+BRAND: {brand}
 
-Critical instruction:
-Interpret intent correctly. For example, if the article describes seizures/crackdowns against fakes, that is DEFENSE (brand already acting / victim), NOT a legal escalation target.
+OBJECTIVE:
+Produce ONE aggregated action package for the next 4 hours, grounded in the input data and consistent with ORIENT+DECIDE outputs.
 
-Return ONLY valid JSON with this schema:
+CRITICAL INTERPRETATION RULE:
+- If the item describes enforcement already happening (seizure/crackdown/counterfeit removal) and the brand is not accused, treat as DEFENSE: do NOT recommend legal escalation against the brand. Focus on monitoring + optional reputation reinforcement.
 
+GATING RULES (avoid overreaction):
+- If there are ZERO items with intent_framing="THREAT", then:
+  - comms_package.external_holding_statement MUST be "not needed"
+  - action_plan_next_4_hours MUST NOT include Legal unless an item explicitly indicates legal exposure for the brand.
+- If intent_framing="DEFENSE", owner_team should be ["PR","Social"] or empty escalation; Legal only if brand is accused.
+- Keep actions proportional to urgency (low=monitor/log, medium=prepare, high=activate crisis response).
+
+OUTPUT RULES:
+- Return ONLY valid JSON matching EXACTLY the schema below.
+- Keep executive_summary to max 6 short bullets.
+- In top_items_by_severity include max 5 items, each as a compact object with title, url, severity, intent_framing, urgency.
+- In action_plan_next_4_hours include 3 to 6 actions maximum.
+- Every action must reference a specific item_title from items_sample (or "cross-cutting").
+
+REQUIRED JSON SCHEMA:
 {{
   "ooda_timeline": {{
     "observe": "what was monitored and why",
@@ -298,7 +315,7 @@ Return ONLY valid JSON with this schema:
   }}
 }}
 
-Input JSON:
+INPUT JSON (use as the ONLY source of truth):
 {json.dumps(payload, ensure_ascii=False)}
 """.strip()
 

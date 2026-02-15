@@ -178,6 +178,13 @@ st.markdown(
 	"This artifact operationalizes the OODA Loop as an AI early-warning system "
 	"for detecting reputational threats."
 )
+st.markdown(
+	"OODA Loop, briefly: a fast decision cycle by Col. John Boyd built to outpace opponents in "
+	"volatile environments. The four stages **Observe, Orient, Decide, Act** repeat continuously: "
+	"you watch signals, interpret them, choose a response, act, then immediately ingest the new "
+	"feedback for the next loop. Use it in crises, competitive markets, or incident response when "
+	"speed and adaptation are the main advantage."
+)
 
 brand = st.text_input("Brand", value=os.getenv("BRAND", "Apple")).strip()
 

@@ -73,7 +73,10 @@ def main():
 		if stmt:
 			exec_one(conn, stmt + ";")
 	conn.close()
-	print(f"DB initialized: {db_path}")
+	if is_remote():
+		print("DB initialized: remote Postgres (Neon/Supabase)")
+	else:
+		print(f"DB initialized: {db_path}")
 
 
 if __name__ == "__main__":

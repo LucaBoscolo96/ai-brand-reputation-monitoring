@@ -1,4 +1,11 @@
+try:
+	from dotenv import load_dotenv
+except ImportError:
+	def load_dotenv(*args, **kwargs):
+		# fallback: silently skip if python-dotenv not installed
+		return False
 from db import get_conn, exec_one
+from db import is_remote
 
 
 DDL = """
@@ -46,11 +53,14 @@ def main():
 	import yaml
 	from pathlib import Path
 
+	load_dotenv()  # load POSTGRES_URL if present in .env
+
 	with open("config.yaml", "r", encoding="utf-8") as f:
 		cfg = yaml.safe_load(f)
 
 	db_path = cfg["storage"]["db_path"]
-	Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+	if not is_remote():
+		Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
 	conn = get_conn(db_path)
 	for stmt in DDL.strip().split(";"):

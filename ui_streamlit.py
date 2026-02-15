@@ -500,6 +500,8 @@ ACTION: {row['recommended_action']}
 				st.markdown("\n".join(dis_lines))
 			else:
 				st.markdown("**No disinformation sources detected in this window.**")
+		else:
+			st.markdown("**No disinformation sources detected in this window.**")
 
 		st.markdown(
 			"**Intent framing legend:**\n"

@@ -345,9 +345,12 @@ ACTION: {row['recommended_action']}
 	def _filter_brand_date(df_in: pd.DataFrame) -> pd.DataFrame:
 		df_work = df_in.copy()
 		# date fallback: published_at -> created_at
-		df_work["published_at_dt"] = pd.to_datetime(df_work.get("published_at"), errors="coerce")
+		df_work["published_at_dt"] = pd.to_datetime(df_work.get("published_at"), errors="coerce", utc=True, infer_datetime_format=True)
 		if df_work["published_at_dt"].isna().all() and "created_at" in df_work.columns:
-			df_work["published_at_dt"] = pd.to_datetime(df_work["created_at"], errors="coerce")
+			df_work["published_at_dt"] = pd.to_datetime(df_work["created_at"], errors="coerce", utc=True, infer_datetime_format=True)
+
+		# drop rows without a valid datetime before comparisons
+		df_work = df_work.dropna(subset=["published_at_dt"])
 
 		cutoff_local = pd.Timestamp.now() - pd.Timedelta(days=10)
 		date_mask = df_work["published_at_dt"] >= cutoff_local

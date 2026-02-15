@@ -55,7 +55,7 @@ def get_conn(db_path: str):
 				url += "&sslmode=require"
 			else:
 				url += "?sslmode=require"
-	conn = psycopg2.connect(url)
+		conn = psycopg2.connect(url)
 		return _patch_pg_cursor(conn)
 
 	# local sqlite fallback

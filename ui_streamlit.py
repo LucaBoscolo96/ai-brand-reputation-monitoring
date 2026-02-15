@@ -229,53 +229,52 @@ if run:
 		log_box = st.empty()
 		log_text = ""
 
-		with st.spinner("Working through the pipeline…"):
-			proc = subprocess.Popen(
-				[sys.executable, str(ORCH)],
-				cwd=str(PROJECT_ROOT),
-				env=env,
-				stdout=subprocess.PIPE,
-				stderr=subprocess.STDOUT,
-				text=True,
-				bufsize=1,
-				encoding="utf-8",
-				errors="replace",
-			)
+		proc = subprocess.Popen(
+			[sys.executable, str(ORCH)],
+			cwd=str(PROJECT_ROOT),
+			env=env,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.STDOUT,
+			text=True,
+			bufsize=1,
+			encoding="utf-8",
+			errors="replace",
+		)
 
-			try:
-				for line in proc.stdout:
-					ln = line.strip()
-					low = ln.lower()
-					if "init db" in low:
-						status_box.info("Initializing DB…")
-					elif "collect rss" in low:
-						status_box.info("Collecting RSS feeds…")
-					elif "export raw" in low:
-						status_box.info("Exporting raw data…")
-					elif "orient (ai)" in low:
-						status_box.info("Orienting among the content…")
-					elif "decide (ai)" in low:
-						status_box.info("Deciding intent and evaluating actions…")
-					elif "act (aggregated)" in low or "act (ai)" in low:
-						status_box.info("Crafting action recommendations…")
-					elif "pipeline completed" in low:
-						status_box.success("Report completed!")
+		try:
+			for line in proc.stdout:
+				ln = line.strip()
+				low = ln.lower()
+				if "init db" in low:
+					status_box.info("🔄 Initializing DB…")
+				elif "collect rss" in low:
+					status_box.info("🔄 Collecting RSS feeds…")
+				elif "export raw" in low:
+					status_box.info("🔄 Exporting raw data…")
+				elif "orient (ai)" in low:
+					status_box.info("🔄 Orienting among the content…")
+				elif "decide (ai)" in low:
+					status_box.info("🔄 Deciding intent and evaluating actions…")
+				elif "act (aggregated)" in low or "act (ai)" in low:
+					status_box.info("🔄 Crafting action recommendations…")
+				elif "pipeline completed" in low:
+					status_box.success("✅ Report completed!")
 
-					log_text += line
-					try:
-						log_box.code(log_text if log_text else "(no stdout)")
-					except Exception:
-						# UI/websocket closed: stop streaming and terminate process
-						if proc.poll() is None:
-							proc.terminate()
-						break
-			finally:
-				if proc.poll() is None:
-					proc.terminate()
-					try:
-						proc.wait(timeout=2)
-					except Exception:
-						pass
+				log_text += line
+				try:
+					log_box.code(log_text if log_text else "(no stdout)")
+				except Exception:
+					# UI/websocket closed: stop streaming and terminate process
+					if proc.poll() is None:
+						proc.terminate()
+					break
+		finally:
+			if proc.poll() is None:
+				proc.terminate()
+				try:
+					proc.wait(timeout=2)
+				except Exception:
+					pass
 		log_box.code(log_text if log_text else "(no stdout)")
 		st.caption(f"Exit code: {proc.returncode}")
 

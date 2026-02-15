@@ -17,19 +17,6 @@ def is_remote() -> bool:
 	return bool(POSTGRES_URL)
 
 
-def _patch_pg_cursor(conn):
-	# default cursor returns tuples; we want dict-like rows for dict(r)
-	conn.autocommit = True
-	_conn_cursor = conn.cursor
-
-	def _cursor(*args, **kwargs):
-		return _conn_cursor(cursor_factory=RealDictCursor, *args, **kwargs)
-
-	# psycopg2 connection.cursor is read-only; just wrap when called
-	conn._dict_cursor = _cursor  # type: ignore
-	return conn
-
-
 def _adapt_sql(sql: str, remote: bool) -> str:
 	if not remote:
 		return sql
@@ -56,7 +43,8 @@ def get_conn(db_path: str):
 			else:
 				url += "?sslmode=require"
 		conn = psycopg2.connect(url)
-		return _patch_pg_cursor(conn)
+		conn.autocommit = True
+		return conn
 
 	# local sqlite fallback
 	Path(db_path).parent.mkdir(parents=True, exist_ok=True)
@@ -68,7 +56,7 @@ def get_conn(db_path: str):
 def exec_one(conn: Any, sql: str, params: tuple = ()) -> None:
 	remote = is_remote()
 	sql = _adapt_sql(sql, remote)
-	cur = conn._dict_cursor() if remote and hasattr(conn, "_dict_cursor") else conn.cursor()
+	cur = conn.cursor(cursor_factory=RealDictCursor) if remote else conn.cursor()
 	cur.execute(sql, params)
 	if hasattr(conn, "commit") and not remote:
 		conn.commit()
@@ -77,7 +65,7 @@ def exec_one(conn: Any, sql: str, params: tuple = ()) -> None:
 def exec_many(conn: Any, sql: str, rows: Iterable[tuple]) -> None:
 	remote = is_remote()
 	sql = _adapt_sql(sql, remote)
-	cur = conn._dict_cursor() if remote and hasattr(conn, "_dict_cursor") else conn.cursor()
+	cur = conn.cursor(cursor_factory=RealDictCursor) if remote else conn.cursor()
 	if hasattr(cur, "executemany"):
 		cur.executemany(sql, rows)
 	else:

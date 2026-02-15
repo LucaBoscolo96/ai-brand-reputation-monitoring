@@ -196,8 +196,6 @@ if APP_PASSWORD:
 		pwd_input = st.text_input("Enter access password to use the app", type="password", key="app_pwd")
 		if pwd_input == APP_PASSWORD:
 			st.session_state["authed"] = True
-			# reset stored password without touching session_state keys directly to avoid Streamlit API errors
-			st.session_state.update({"app_pwd": ""})
 			st.experimental_rerun()
 		elif pwd_input:
 			st.error("Incorrect password.")

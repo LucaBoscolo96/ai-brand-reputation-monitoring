@@ -211,6 +211,10 @@ def decide_one(client: OpenAI, brand: str, raw: Dict, orient: Dict) -> Dict:
 	if "fact_check_rationale" not in obj or not obj["fact_check_rationale"]:
 		obj["fact_check_rationale"] = "Not enough evidence in snippet/title; mark as uncertain."
 
+	# If disinformation, force intent_framing to THREAT (per requirement)
+	if obj["fact_check_status"] == "disinformation":
+		obj["intent_framing"] = "THREAT"
+
 	return obj
 
 

@@ -110,7 +110,7 @@ observe:
       # - "https://www.ansa.it/sito/notizie/tecnologia/tecnologia_rss.xml"
       # - "https://www.ansa.it/sito/notizie/cultura/cultura_rss.xml"
 
-      - "https://www.repubblica.it/rss/homepage/rss2.0.xml"
+      # - "https://www.repubblica.it/rss/homepage/rss2.0.xml"
       # - "https://www.repubblica.it/rss/cronaca/rss2.0.xml"
       # - "https://www.repubblica.it/rss/economia/rss2.0.xml"
       # - "https://www.repubblica.it/rss/politica/rss2.0.xml"
@@ -118,7 +118,7 @@ observe:
       # - "https://www.repubblica.it/rss/tecnologia/rss2.0.xml"
       # - "https://www.repubblica.it/rss/cultura/rss2.0.xml"
 
-      - "https://www.corriere.it/rss/homepage.xml"
+      # - "https://www.corriere.it/rss/homepage.xml"
       # - "https://www.corriere.it/rss/cronache.xml"
       # - "https://www.corriere.it/rss/politica.xml"
       # - "https://www.corriere.it/rss/economia.xml"
@@ -127,7 +127,7 @@ observe:
       # - "https://www.corriere.it/rss/spettacoli.xml"
       # - "https://www.corriere.it/rss/"
 
-      - "https://www.ilsole24ore.com/rss/italia.xml"
+      # - "https://www.ilsole24ore.com/rss/italia.xml"
       # - "https://www.ilsole24ore.com/rss/economia.xml"
       # - "https://www.ilsole24ore.com/rss/finanza-mercati.xml"
       # - "https://www.ilsole24ore.com/rss/mondo.xml"
@@ -236,18 +236,18 @@ observe:
       # INGLESE (world + business)
       # =========================
       # - "https://feeds.bbci.co.uk/news/rss.xml"
-      - "https://feeds.bbci.co.uk/news/world/rss.xml"
+      # - "https://feeds.bbci.co.uk/news/world/rss.xml"
       # - "https://feeds.bbci.co.uk/news/business/rss.xml"
       # - "https://feeds.bbci.co.uk/news/technology/rss.xml"
       # - "https://feeds.bbci.co.uk/news/uk/rss.xml"
 
       # - "https://www.theguardian.com/international/rss"
-      - "https://www.theguardian.com/world/rss"
+      # - "https://www.theguardian.com/world/rss"
       # - "https://www.theguardian.com/business/rss"
       # - "https://www.theguardian.com/technology/rss"
 
       # - "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
-      - "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+      # - "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
       # - "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"
       # - "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"
 
@@ -255,9 +255,9 @@ observe:
       # - "https://www.npr.org/rss/rss.php?id=1004"
       # - "https://www.npr.org/rss/rss.php?id=1006"
 
-      - "https://www.aljazeera.com/xml/rss/all.xml"
+      # - "https://www.aljazeera.com/xml/rss/all.xml"
 
-      - "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+      # - "https://www.cnbc.com/id/100003114/device/rss/rss.html"
       # - "https://www.cnbc.com/id/10001147/device/rss/rss.html"
       # - "https://www.cnbc.com/id/19854910/device/rss/rss.html"
 
@@ -287,7 +287,7 @@ observe:
       # =========================
       # GOOGLE NEWS (ITA+ENG query)
       # =========================
-      - "https://news.google.com/rss/search?q=[BRAND]&hl=it&gl=IT&ceid=IT:it"
+      # - "https://news.google.com/rss/search?q=[BRAND]&hl=it&gl=IT&ceid=IT:it"
       # - "https://news.google.com/rss/search?q=[BRAND]%20scandalo&hl=it&gl=IT&ceid=IT:it"
       # - "https://news.google.com/rss/search?q=[BRAND]%20inchiesta&hl=it&gl=IT&ceid=IT:it"
       # - "https://news.google.com/rss/search?q=[BRAND]%20caporalato&hl=it&gl=IT&ceid=IT:it"

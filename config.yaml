@@ -1,0 +1,314 @@
+project:
+  name: "AI Brand Reputation Monitoring"
+  brand: "Prada"
+  timezone: "Europe/Zurich"
+
+storage:
+  db_path: "data/ooda.db"
+
+observe:
+  keywords:
+    brand_terms: ["prada"]
+
+    risk_terms:
+      # -----------------------------
+      # IT — reputazione / crisi
+      # -----------------------------
+      - "scandalo"
+      - "polemica"
+      - "controversia"
+      - "critiche"
+      - "boicottaggio"
+      - "accuse"
+      - "denuncia"
+      - "indagine"
+      - "inchiesta"
+      - "sfruttamento"
+      - "lavoro nero"
+      - "caporalato"
+      - "diritti dei lavoratori"
+      - "filiera"
+      - "fornitori"
+      - "crisi reputazionale"
+      - "reputazione"
+      - "bufala"
+      - "fake news"
+      - "notizia falsa"
+      - "disinformazione"
+      - "deepfake"
+      - "manipolazione"
+
+      # Contraffazione / frodi
+      - "contraffazione"
+      - "falso"
+      - "fake"
+      - "sequestro"
+      - "truffa"
+      - "frode"
+      - "mercato nero"
+
+      # -----------------------------
+      # EN — reputation / controversy
+      # -----------------------------
+      - "scandal"
+      - "controversy"
+      - "backlash"
+      - "outrage"
+      - "criticism"
+      - "critics"
+      - "boycott"
+      - "accusations"
+      - "allegations"
+      - "lawsuit"
+      - "legal action"
+      - "investigation"
+      - "probe"
+      - "inquiry"
+      - "charged"
+      - "fraud"
+      - "corruption"
+      - "misconduct"
+      - "whistleblower"
+
+      # EN — labour / supply chain risk
+      - "exploitation"
+      - "forced labour"
+      - "child labour"
+      - "worker rights"
+      - "supply chain"
+      - "factory conditions"
+      - "unsafe working conditions"
+      - "union dispute"
+
+      # EN — misinformation / AI threats
+      - "fake news"
+      - "misinformation"
+      - "disinformation"
+      - "deepfake"
+      - "hoax"
+      - "false claims"
+      - "online rumors"
+      - "propaganda"
+
+      # EN — counterfeiting
+      - "counterfeit"
+      - "fake products"
+      - "knockoff"
+      - "seizure"
+      - "illegal sales"
+
+  rss:
+    enabled: true
+    feeds:
+      # =========================
+      # ITALIA (news + economia)
+      # =========================
+      - "https://www.ansa.it/sito/ansait_rss.xml"
+      - "https://www.ansa.it/sito/notizie/economia/economia_rss.xml"
+      - "https://www.ansa.it/sito/notizie/cronaca/cronaca_rss.xml"
+      - "https://www.ansa.it/sito/notizie/politica/politica_rss.xml"
+      - "https://www.ansa.it/sito/notizie/tecnologia/tecnologia_rss.xml"
+      - "https://www.ansa.it/sito/notizie/cultura/cultura_rss.xml"
+
+      - "https://www.repubblica.it/rss/homepage/rss2.0.xml"
+      - "https://www.repubblica.it/rss/cronaca/rss2.0.xml"
+      - "https://www.repubblica.it/rss/economia/rss2.0.xml"
+      - "https://www.repubblica.it/rss/politica/rss2.0.xml"
+      - "https://www.repubblica.it/rss/esteri/rss2.0.xml"
+      - "https://www.repubblica.it/rss/tecnologia/rss2.0.xml"
+      - "https://www.repubblica.it/rss/cultura/rss2.0.xml"
+
+      - "https://www.corriere.it/rss/homepage.xml"
+      - "https://www.corriere.it/rss/cronache.xml"
+      - "https://www.corriere.it/rss/politica.xml"
+      - "https://www.corriere.it/rss/economia.xml"
+      - "https://www.corriere.it/rss/tecnologia.xml"
+      - "https://www.corriere.it/rss/cultura.xml"
+      - "https://www.corriere.it/rss/spettacoli.xml"
+      - "https://www.corriere.it/rss/"
+
+      - "https://www.ilsole24ore.com/rss/italia.xml"
+      - "https://www.ilsole24ore.com/rss/economia.xml"
+      - "https://www.ilsole24ore.com/rss/finanza-mercati.xml"
+      - "https://www.ilsole24ore.com/rss/mondo.xml"
+      - "https://www.ilsole24ore.com/rss/tecnologia.xml"
+
+      - "https://www.lastampa.it/rss"
+      - "https://www.lastampa.it/cronaca/rss"
+      - "https://www.lastampa.it/economia/rss"
+      - "https://www.lastampa.it/esteri/rss"
+      - "https://www.lastampa.it/politica/rss"
+
+      - "https://www.ilfattoquotidiano.it/feed/"
+      - "https://www.ilfattoquotidiano.it/feed/economia"
+      - "https://www.ilfattoquotidiano.it/feed/politica"
+      - "https://www.ilfattoquotidiano.it/feed/cronaca"
+      - "https://www.blitzquotidiano.it/feed/"
+
+      - "https://www.ilmessaggero.it/rss/home.xml"
+      - "https://www.ilmattino.it/rss/home.xml"
+      - "https://www.quotidiano.net/rss"
+      - "https://www.ilgiornale.it/rss.xml"
+
+      - "https://www.rainews.it/rss/tutti"
+      - "https://tg24.sky.it/rss/tg24.xml"
+      - "https://www.tgcom24.mediaset.it/rss/homepage.xml"
+
+      - "https://www.open.online/feed/"
+      - "https://www.linkiesta.it/feed/"
+      - "https://www.panorama.it/feed"
+      - "https://www.agi.it/rss"
+      - "https://www.dire.it/feed/"
+      - "https://www.adnkronos.com/rss"
+      - "https://www.affaritaliani.it/rss/rss-affaritaliani.html"
+      - "http://www.affaritaliani.it/rss/rss-affaritaliani.html"
+      - "https://www.agi.it/info/rss"
+      - "http://www.adnkronos.com/rss"
+      - "http://www.ansa.it/main/html/ansa_rss.html"
+      - "http://www.corriere.it/rss/"
+      - "https://forbes.it/feed/"
+      - "http://formiche.net/feed/"
+      - "https://news.google.com/news/rss/?ned=us&gl=US&hl=en"
+      - "https://www.ilfoglio.it/sezioni/112/rss"
+      - "http://www.ilgiornale.it/feed.xml"
+      - "http://www.ilgiornale.it/taxonomy/term/40819/feed"
+      - "http://www.ilgiornale.it/taxonomy/term/40821/feed"
+      - "http://www.ilgiornale.it/taxonomy/term/40820/feed"
+      - "http://www.ilgiornale.it/taxonomy/term/40822/feed"
+      - "http://www.ilgiornale.it/taxonomy/term/40826/feed"
+      - "http://salute.ilgiornale.it/rss/"
+      - "http://www.ilgiornale.it/taxonomy/term/46964/feed"
+      - "https://ilmanifesto.it/feed/"
+      - "https://www.internazionale.it/sitemaps/rss.xml"
+      - "https://www.internazionale.it/sitemaps/rss_italia.xml"
+      - "https://www.internazionale.it/sitemaps/rss_foto.xml"
+      - "https://www.internazionale.it/sitemaps/rss_video.xml"
+      - "https://www.internazionale.it/sitemaps/rss_opinioni.xml"
+      - "https://www.internazionale.it/sitemaps/rss_reportage.xml"
+      - "http://www.repubblica.it/servizi/rss/"
+      - "http://www.gazzetta.it/rss/"
+      - "http://feeds.feedburner.com/lavoce/kNav"
+      - "http://www.linkiesta.it/it/feed/"
+      - "https://www.panorama.it/feed/"
+      - "https://www.studiocataldi.it/feed_rss.asp"
+      - "https://feeds.skynews.com/feeds/rss/home.xml"
+      - "http://www.independent.co.uk/rss"
+      - "https://www.huffingtonpost.co.uk/feeds/index.xml"
+      - "https://www.dailyrecord.co.uk/news/?service=rss"
+      - "https://www.thesun.co.uk/feed/"
+      - "https://www.politics.co.uk/feed/"
+      - "https://www.mirror.co.uk/?service=rss"
+      - "https://www.standard.co.uk/rss"
+      - "https://www.manchestereveningnews.co.uk/?service=rss"
+      - "https://feeds.feedburner.com/daily-express-news-showbiz"
+      - "https://metro.co.uk/feed/"
+      - "https://www.birminghammail.co.uk/?service=rss"
+      - "https://www.theargus.co.uk/news/rss/"
+      - "https://www.yorkpress.co.uk/news/rss/"
+      - "https://www.thenorthernecho.co.uk/news/rss/"
+      - "https://www.theboltonnews.co.uk/news/rss/"
+      - "https://www.portsmouth.co.uk/rss"
+      - "https://www.thescarboroughnews.co.uk/rss"
+      - "https://www.walesonline.co.uk/?service=rss"
+      - "https://www.heraldscotland.com/news/rss/"
+      - "https://www.belfastlive.co.uk/?service=rss"
+      - "https://www.cambridge-news.co.uk/?service=rss"
+      - "https://www.grimsbytelegraph.co.uk/news/?service=rss"
+      - "https://www.glasgowtimes.co.uk/news/rss/"
+      - "https://www.deadlinenews.co.uk/feed/"
+      - "https://www.positive.news/feed/"
+      - "https://londonjournal.co.uk/feed/"
+      - "https://consettmagazine.com/feed/"
+      - "https://www.thedailymash.co.uk/feed"
+      - "https://www.scotsman.com/news/rss"
+      - "https://feeds.breakingnews.ie/bntopstories"
+      - "https://www.thescottishsun.co.uk/feed/"
+      - "https://www.scottishfield.co.uk/feed/"
+      - "https://www.dailyecho.co.uk/news/rss/"
+      - "https://www.kentnews.online/feed/"
+      - "https://www.northernirelandworld.com/news/rss"
+      - "https://www.theguardian.com/uk-news/rss"
+      - "https://www.breakingnewstoday.co.uk/feed/"
+      - "https://newsnet.scot/feed/"
+      - "https://www.churchnewspaper.com/feed/"
+
+      # =========================
+      # INGLESE (world + business)
+      # =========================
+      - "https://feeds.bbci.co.uk/news/rss.xml"
+      - "https://feeds.bbci.co.uk/news/world/rss.xml"
+      - "https://feeds.bbci.co.uk/news/business/rss.xml"
+      - "https://feeds.bbci.co.uk/news/technology/rss.xml"
+      - "https://feeds.bbci.co.uk/news/uk/rss.xml"
+
+      - "https://www.theguardian.com/international/rss"
+      - "https://www.theguardian.com/world/rss"
+      - "https://www.theguardian.com/business/rss"
+      - "https://www.theguardian.com/technology/rss"
+
+      - "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+      - "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
+      - "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml"
+      - "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"
+
+      - "https://www.npr.org/rss/rss.php?id=1001"
+      - "https://www.npr.org/rss/rss.php?id=1004"
+      - "https://www.npr.org/rss/rss.php?id=1006"
+
+      - "https://www.aljazeera.com/xml/rss/all.xml"
+
+      - "https://www.cnbc.com/id/100003114/device/rss/rss.html"
+      - "https://www.cnbc.com/id/10001147/device/rss/rss.html"
+      - "https://www.cnbc.com/id/19854910/device/rss/rss.html"
+
+      - "https://www.marketwatch.com/rss/topstories"
+      - "https://www.marketwatch.com/rss/marketpulse"
+      - "https://www.investing.com/rss/news_25.rss"
+
+      - "https://www.ft.com/?format=rss"
+      - "https://www.ft.com/world?format=rss"
+      - "https://www.ft.com/companies?format=rss"
+      - "https://www.ft.com/technology?format=rss"
+
+      - "https://www.economist.com/the-world-this-week/rss.xml"
+      - "https://www.economist.com/business/rss.xml"
+      - "https://www.economist.com/finance-and-economics/rss.xml"
+
+      - "https://www.latimes.com/world/rss2.0.xml"
+      - "https://www.latimes.com/business/rss2.0.xml"
+      - "https://www.chicagotribune.com/arcio/rss/"
+
+      - "https://www.techmeme.com/feed.xml"
+      - "https://www.theverge.com/rss/index.xml"
+      - "https://www.wired.com/feed/rss"
+      - "https://www.engadget.com/rss.xml"
+      - "https://feeds.arstechnica.com/arstechnica/index"
+
+      # =========================
+      # GOOGLE NEWS (ITA+ENG query)
+      # =========================
+      - "https://news.google.com/rss/search?q=[BRAND]&hl=it&gl=IT&ceid=IT:it"
+      - "https://news.google.com/rss/search?q=[BRAND]%20scandalo&hl=it&gl=IT&ceid=IT:it"
+      - "https://news.google.com/rss/search?q=[BRAND]%20inchiesta&hl=it&gl=IT&ceid=IT:it"
+      - "https://news.google.com/rss/search?q=[BRAND]%20caporalato&hl=it&gl=IT&ceid=IT:it"
+      - "https://news.google.com/rss/search?q=[BRAND]%20contraffazione&hl=it&gl=IT&ceid=IT:it"
+      - "https://news.google.com/rss/search?q=[BRAND]%20fake&hl=it&gl=IT&ceid=IT:it"
+
+      - "https://news.google.com/rss/search?q=[BRAND]&hl=en&gl=US&ceid=US:en"
+      - "https://news.google.com/rss/search?q=[BRAND]%20scandal&hl=en&gl=US&ceid=US:en"
+      - "https://news.google.com/rss/search?q=[BRAND]%20investigation&hl=en&gl=US&ceid=US:en"
+      - "https://news.google.com/rss/search?q=[BRAND]%20lawsuit&hl=en&gl=US&ceid=US:en"
+      - "https://news.google.com/rss/search?q=[BRAND]%20counterfeit&hl=en&gl=US&ceid=US:en"
+      - "https://news.google.com/rss/search?q=[BRAND]%20labor&hl=en&gl=US&ceid=US:en"
+
+      # Reddit
+      - "https://www.reddit.com/r/[BRAND]/.rss"
+      - "https://www.reddit.com/r/[BRAND]/new/.rss"
+      - "https://www.reddit.com/r/[BRAND]/top/.rss"
+      - "https://www.reddit.com/r/[BRAND]/search.rss?q=fake&restrict_sr=1&sort=new"
+      - "https://www.reddit.com/r/[BRAND]/search.rss?q=scandal&restrict_sr=1&sort=new"
+
+filters:
+  require_brand: true
+  require_risk: true
+  max_items_per_feed: 50

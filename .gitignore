@@ -1,0 +1,19 @@
+.env
+.venv/
+/.git2/
+/.git_locked/
+__pycache__/
+*.pyc
+*.log
+robolog.txt
+tmp.txt
+import os.txt
+*.db
+tmp/
+runs/
+data/
+backup_*/
+backup_*.zip
+.vscode/
+.DS_Store
+Thumbs.db

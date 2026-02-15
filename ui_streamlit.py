@@ -483,20 +483,21 @@ ACTION: {row['recommended_action']}
 		st.markdown("\n".join(lines))
 
 		# Disinformation highlight
-		disinfo_mask = (df_window.get("fact_check_status") == "disinformation")
-		if disinfo_mask.any():
-			disinfo_df = df_window[disinfo_mask].sort_values("severity", ascending=False)
-			st.markdown(f"**{len(disinfo_df)} occurrences were classified as Disinformation:**")
-			dis_lines = []
-			for _, row in disinfo_df.iterrows():
-				title = row.get("title", "Untitled")
-				url = row.get("url", "")
-				severity = row.get("severity", "N/A")
-				intent = row.get("intent_framing", "N/A")
-				urg = row.get("urgency", "N/A")
-				link_title = f"[{title}]({url})" if url else title
-				dis_lines.append(f"- {link_title} — severity **{severity}**, intent **{intent}**, urgency **{urg}**")
-			st.markdown("\n".join(dis_lines))
+		if "fact_check_status" in df_window.columns:
+			disinfo_mask = (df_window["fact_check_status"] == "disinformation")
+			if hasattr(disinfo_mask, "any") and disinfo_mask.any():
+				disinfo_df = df_window[disinfo_mask].sort_values("severity", ascending=False)
+				st.markdown(f"**{len(disinfo_df)} occurrences were classified as Disinformation:**")
+				dis_lines = []
+				for _, row in disinfo_df.iterrows():
+					title = row.get("title", "Untitled")
+					url = row.get("url", "")
+					severity = row.get("severity", "N/A")
+					intent = row.get("intent_framing", "N/A")
+					urg = row.get("urgency", "N/A")
+					link_title = f"[{title}]({url})" if url else title
+					dis_lines.append(f"- {link_title} — severity **{severity}**, intent **{intent}**, urgency **{urg}**")
+				st.markdown("\n".join(dis_lines))
 
 		st.markdown(
 			"**Intent framing legend:**\n"

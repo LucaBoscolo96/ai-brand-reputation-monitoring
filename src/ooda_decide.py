@@ -136,6 +136,7 @@ ALLOWED intent_framing (pick ONE):
 - NOISE: irrelevant/gossip/low business impact or not truly about the brand.
 
 CRITICAL RULES (anti-hallucination):
+- First, confirm the article is genuinely about the brand (exact brand name or clear reference). If it is an unrelated homonym or side mention, classify as NOISE with low urgency and empty escalation_team.
 - Do NOT treat negative keywords as a crisis by default. Decide based on framing.
 - If the snippet suggests authorities already acted (e.g., seizure, crackdown, enforcement completed), prefer DEFENSE unless the brand is accused.
 - If the brand is only mentioned in passing, use NEUTRAL or NOISE (not THREAT).
@@ -243,6 +244,8 @@ def main():
 	print(f"\nRunning DECIDE for brand: {brand}")
 	print(f"Scanning last {len(records)} ORIENT items...\n")
 
+	brand_lower = brand.lower()
+
 	# Pre-filtra ciò che è già deciso per evitare chiamate inutili
 	to_process = []
 	for rec in records:
@@ -262,6 +265,25 @@ def main():
 			"url": rec.get("url"),
 			"content": rec.get("content"),
 		}
+
+		# Brand relevance check: skip homonyms / unrelated mentions
+		text_join = " ".join([raw.get("title") or "", raw.get("content") or "", raw.get("url") or ""]).lower()
+		if brand_lower and brand_lower not in text_join:
+			decide = {
+				"intent_framing": "NOISE",
+				"recommended_action": "No action: not about the brand.",
+				"urgency": "low",
+				"escalation_team": [],
+				"rationale": "Excluded: content does not reference the brand; treated as unrelated homonym/noise.",
+				"no_regret_move": "Monitor briefly for any brand-specific mention.",
+			}
+			cur.execute("""
+				INSERT INTO items_decide (raw_item_id, orient_id, brand, decide_json)
+				VALUES (?, ?, ?, ?)
+			""", (int(raw_item_id), int(orient_id), brand, json.dumps(decide, ensure_ascii=False)))
+			skipped += 1
+			continue
+
 		to_process.append((orient_id, raw_item_id, raw, orient))
 
 	# Decidi in parallelo (fino a ~30 worker)

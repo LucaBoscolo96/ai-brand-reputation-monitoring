@@ -196,7 +196,6 @@ if APP_PASSWORD:
 		pwd_input = st.text_input("Enter access password to use the app", type="password", key="app_pwd")
 		if pwd_input == APP_PASSWORD:
 			st.session_state["authed"] = True
-			st.experimental_rerun()
 		elif pwd_input:
 			st.error("Incorrect password.")
 			st.stop()

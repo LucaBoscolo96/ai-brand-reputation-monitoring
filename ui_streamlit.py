@@ -577,6 +577,21 @@ ACTION: {row['recommended_action']}
 					page_md_lines.append(
 						f"- [{row['title']}]({row['url']}) — severity **{row['severity']}**, intent **{row['intent_framing']}**, urgency **{row['urgency']}**"
 					)
+
+				# Disinformation list (for download)
+				if 'df_window' in locals() and "fact_check_status" in df_window.columns:
+					disinfo_df_dl = df_window[df_window["fact_check_status"] == "disinformation"].sort_values("severity", ascending=False)
+					if not disinfo_df_dl.empty:
+						page_md_lines.append("")
+						page_md_lines.append(f"{len(disinfo_df_dl)} occurrences were classified as Disinformation:")
+						for _, row in disinfo_df_dl.iterrows():
+							title = row.get("title", "Untitled")
+							url = row.get("url", "")
+							severity = row.get("severity", "N/A")
+							intent = row.get("intent_framing", "N/A")
+							urg = row.get("urgency", "N/A")
+							link_title = f"[{title}]({url})" if url else title
+							page_md_lines.append(f"- {link_title} — severity **{severity}**, intent **{intent}**, urgency **{urg}**")
 			else:
 				page_md_lines.append("- No priority issues available.")
 			page_md_lines.append("")

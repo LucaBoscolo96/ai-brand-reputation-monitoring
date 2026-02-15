@@ -63,6 +63,11 @@ def main():
 		Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
 	conn = get_conn(db_path)
+	if is_remote():
+		print("DB target: Postgres (POSTGRES_URL detected, sslmode=require)")
+	else:
+		print(f"DB target: SQLite ({db_path})")
+
 	for stmt in DDL.strip().split(";"):
 		stmt = stmt.strip()
 		if stmt:

@@ -11,7 +11,7 @@ from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, Alignment
 
-from db import get_conn
+from db import get_conn, is_remote
 
 MODEL = "gpt-5-mini"  # come hai scelto tu
 
@@ -35,10 +35,18 @@ def ensure_act_table(conn) -> None:
 
 def table_exists(conn, table_name: str) -> bool:
 	cur = conn.cursor()
-	cur.execute("""
-		SELECT name FROM sqlite_master
-		WHERE type='table' AND name=?
-	""", (table_name,))
+	if is_remote():
+		cur.execute("""
+			SELECT 1
+			FROM information_schema.tables
+			WHERE table_schema = 'public' AND table_name = %s
+			LIMIT 1
+		""", (table_name,))
+	else:
+		cur.execute("""
+			SELECT name FROM sqlite_master
+			WHERE type='table' AND name=?
+		""", (table_name,))
 	return cur.fetchone() is not None
 
 

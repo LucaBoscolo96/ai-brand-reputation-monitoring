@@ -35,6 +35,19 @@ def _adapt_sql(sql: str, remote: bool) -> str:
 		s,
 		flags=re.IGNORECASE,
 	)
+	# Cast published_at text to timestamp for comparisons
+	s = re.sub(
+		r"(\bpublished_at\b)\s*>=",
+		r"CAST(\1 AS TIMESTAMP) >=",
+		s,
+		flags=re.IGNORECASE,
+	)
+	s = re.sub(
+		r"(\bpublished_at\b)\s*<=",
+		r"CAST(\1 AS TIMESTAMP) <=",
+		s,
+		flags=re.IGNORECASE,
+	)
 	return s
 
 

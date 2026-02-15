@@ -190,15 +190,18 @@ st.markdown(
 )
 
 # Simple password gate (password set via APP_PASSWORD in env or Streamlit secrets)
-if not st.session_state["authed"]:
-	pwd_input = st.text_input("Enter access password to use the app", type="password")
-	if APP_PASSWORD and pwd_input == APP_PASSWORD:
-		st.session_state["authed"] = True
-	elif pwd_input:
-		st.error("Incorrect password.")
-		st.stop()
-	else:
-		st.stop()
+if APP_PASSWORD:
+	if not st.session_state["authed"]:
+		pwd_input = st.text_input("Enter access password to use the app", type="password")
+		if pwd_input == APP_PASSWORD:
+			st.session_state["authed"] = True
+		elif pwd_input:
+			st.error("Incorrect password.")
+			st.stop()
+		else:
+			st.stop()
+else:
+	st.info("Set APP_PASSWORD in secrets/env to protect this app.")
 
 brand = st.text_input("Brand", value=os.getenv("BRAND", "Apple")).strip()
 

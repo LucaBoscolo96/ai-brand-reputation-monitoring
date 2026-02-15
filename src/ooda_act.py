@@ -246,7 +246,7 @@ FRAMEWORK CONSTRAINT (ACT ONLY):
 BRAND: {brand}
 
 OBJECTIVE:
-Produce ONE aggregated action package for the next 4 hours, grounded in the input data and consistent with ORIENT+DECIDE outputs.
+Produce ONE aggregated action package to be executed as soon as possible, grounded in the input data and consistent with ORIENT+DECIDE outputs.
 
 CRITICAL INTERPRETATION RULE:
 - If the item describes enforcement already happening (seizure/crackdown/counterfeit removal) and the brand is not accused, treat as DEFENSE: do NOT recommend legal escalation against the brand. Focus on monitoring + optional reputation reinforcement.
@@ -450,7 +450,7 @@ def main():
 	brand = get_brand(cfg)
 	db_path = cfg["storage"]["db_path"]
 
-	items = fetch_full_ooda_view(db_path, brand, limit=50)
+	items = fetch_full_ooda_view(db_path, brand, limit=20)
 	if not items:
 		print("No DECIDE items found. Run: python src/ooda_decide.py")
 		return

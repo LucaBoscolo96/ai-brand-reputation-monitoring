@@ -103,53 +103,71 @@ def build_decide_prompt(brand: str, raw: Dict, orient: Dict) -> str:
 	rep_risk = orient.get("reputational_risk", "")
 
 	return f"""
-You are an AI Early Warning Advisor for brand reputation.
-You MUST follow the OODA Loop framework.
+ROLE: You are the DECIDE module of an OODA Loop AI early-warning system for brand reputation monitoring.
 
-We are now in the DECIDE phase.
+FRAMEWORK CONSTRAINT:
+- This is DECIDE only: choose intent_framing + urgency + escalation_team + recommended_action + no_regret_move.
+- Do NOT write generic consultancy. Do NOT invent facts. Use ONLY the provided inputs (Title/Snippet/URL + ORIENT fields).
 
-Brand: {brand}
+BRAND: {brand}
 
-Inputs:
-- ORIENT claim_summary: {claim_summary}
-- ORIENT narrative_category: {narr_cat}
-- ORIENT reputational_risk: {rep_risk}
-- ORIENT severity: {sev}
+INPUTS (from ORIENT):
+- claim_summary: {claim_summary}
+- narrative_category: {narr_cat}
+- reputational_risk: {rep_risk}
+- severity: {sev}
 
-News item:
+NEWS ITEM:
 - Title: {title}
 - Snippet: {snippet}
 - URL: {url}
 
-Critical instruction:
-Do NOT assume that negative keywords automatically mean a crisis for the brand.
-You must interpret the INTENT / FRAMING of the article.
+TASK:
+1) Interpret the INTENT / FRAMING of the article toward the brand.
+2) Select exactly ONE intent_framing label.
+3) Decide urgency and escalation_team with strict rules below.
+4) Output ONLY valid JSON matching the required schema.
 
-Classify the framing into ONE of:
-- THREAT (brand accused or harmed; scandal, wrongdoing, boycott, investigation targeting brand)
-- DEFENSE (enforcement already happening; seizures/crackdowns against fakes; brand is victim or acting)
-- OPPORTUNITY (positive strategic news: acquisition, partnership, award, growth)
-- NEUTRAL (informational mention; no clear threat or opportunity)
-- NOISE (gossip/low relevance; no business impact)
+ALLOWED intent_framing (pick ONE):
+- THREAT: the brand is accused, investigated, blamed, harmed, or faces boycott/controversy targeting the brand.
+- DEFENSE: enforcement or corrective action is already happening (e.g., seizures/crackdowns against counterfeits; brand is victim/solution).
+- OPPORTUNITY: positive strategic business news (partnership, award, growth, acquisition).
+- NEUTRAL: informational mention without clear threat/opportunity.
+- NOISE: irrelevant/gossip/low business impact or not truly about the brand.
 
-Then decide the correct action:
-- THREAT: escalate to crisis response; propose immediate steps
-- DEFENSE: monitor + consider reputation reinforcement messaging ("brand fighting counterfeits")
-- OPPORTUNITY: suggest reputational leverage / comms angle
-- NEUTRAL: log & monitor only
-- NOISE: ignore / deprioritize
+CRITICAL RULES (anti-hallucination):
+- Do NOT treat negative keywords as a crisis by default. Decide based on framing.
+- If the snippet suggests authorities already acted (e.g., seizure, crackdown, enforcement completed), prefer DEFENSE unless the brand is accused.
+- If the brand is only mentioned in passing, use NEUTRAL or NOISE (not THREAT).
 
-Return ONLY valid JSON with these fields:
+URGENCY RULES (must be consistent with severity + reputational_risk):
+- If reputational_risk = low OR severity < 30 → urgency MUST be low (unless explicit immediate safety/legal threat is stated).
+- If reputational_risk = medium AND severity 30-69 → urgency is medium.
+- If reputational_risk = high OR severity >= 70 → urgency can be high, but only if the article targets the brand with accusations/investigations/boycott dynamics.
+- If intent_framing = DEFENSE (enforcement already happening) → urgency should be low or medium (avoid “high” unless there is escalation evidence in text).
+
+ESCALATION TEAM RULES:
+- THREAT + urgency high → include PR and Exec; include Legal only if the text implies legal exposure/investigation targeting brand.
+- DEFENSE → escalation_team should be empty or ["PR"] (Legal only if brand is accused or named in wrongdoing).
+- OPPORTUNITY → escalation_team can be ["PR"] (optional).
+- NEUTRAL/NOISE → escalation_team MUST be empty.
+
+OUTPUT FORMAT:
+Return ONLY valid JSON with EXACTLY these fields:
 {{
   "intent_framing": "THREAT|DEFENSE|OPPORTUNITY|NEUTRAL|NOISE",
-  "recommended_action": "one sentence",
+  "recommended_action": "one sentence, specific and proportional",
   "urgency": "low|medium|high",
-  "escalation_team": ["PR","Legal","Security","Exec"]  // can be empty
-  "rationale": "2-3 sentences explaining WHY this framing and action",
+  "escalation_team": ["PR","Legal","Security","Exec"],
+  "rationale": "2-3 sentences referencing the snippet/claim_summary (no external facts)",
   "no_regret_move": "one concrete step that is safe in most cases"
 }}
 
-Make sure intent_framing matches exactly one of the allowed values.
+QUALITY CHECK BEFORE FINAL:
+- escalation_team must be an array (can be empty []).
+- rationale must explain why NOT escalating if DEFENSE/NEUTRAL/NOISE.
+- Keep actions proportional and avoid unnecessary legal escalation if enforcement already happened.
+
 """.strip()
 
 

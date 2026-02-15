@@ -60,35 +60,56 @@ def api_smoke_test(client: OpenAI, brand: str) -> None:
 	print(f"API smoke test OK for brand: {brand}")
 
 
-def orient_item(client: OpenAI, item: Dict, brand: str) -> Dict:
-	prompt = f"""
-You are an AI Early Warning Analyst for brand reputation crises.
+def orient_batch(client: OpenAI, brand: str, batch: List[Dict]) -> List[Dict]:
+	"""
+	Batch more items in a single call; response keeps item_id to re-map.
+	"""
+	parts = []
+	for item in batch:
+		parts.append(
+			{
+				"item_id": item["id"],
+				"title": (item.get("title") or "")[:500],
+				"snippet": (item.get("content") or "")[:1000],
+				"url": item.get("url") or "",
+			}
+		)
 
-Brand under monitoring: {brand}
+	prompt = {
+		"instruction": "For each item return a JSON object with key 'items' (array) and include all fields; keep item_id to match inputs.",
+		"brand": brand,
+		"items": parts,
+		"schema": {
+			"item_id": "int (echo input)",
+			"claim_summary": "string, 1 sentence",
+			"narrative_category": "supply_chain|cultural_controversy|financial|fake_news|other",
+			"reputational_risk": "low|medium|high",
+			"severity": "0-100",
+			"confidence": "0-1",
+			"verification_steps": "list of 3 bullets",
+		},
+	}
 
-Analyze the following news item and assess its reputational risk.
+	prompt_text = json.dumps(prompt, ensure_ascii=False)
 
-Return ONLY valid JSON with these fields:
-- claim_summary (1 sentence)
-- narrative_category (one of: supply_chain, cultural_controversy, financial, fake_news, other)
-- reputational_risk (low/medium/high)
-- severity (0-100)
-- confidence (0-1)
-- verification_steps (list of 3 bullets)
-
-NEWS TITLE: {item['title']}
-NEWS SNIPPET: {item['content']}
-URL: {item['url']}
-"""
-
-	response = client.chat.completions.create(
+	resp = client.chat.completions.create(
 		model=MODEL,
-		messages=[{"role": "user", "content": prompt}],
+		messages=[
+			{
+				"role": "user",
+				"content": (
+					"Return ONLY JSON. Respond with a single JSON object containing key 'items'. "
+					"Do not add prose or explanations.\n\n"
+					+ prompt_text
+				),
+			}
+		],
 		response_format={"type": "json_object"},
-		timeout=30,
+		timeout=45,
 	)
 
-	return json.loads(response.choices[0].message.content)
+	payload = json.loads(resp.choices[0].message.content)
+	return payload.get("items", [])
 
 
 def main():
@@ -123,7 +144,7 @@ def main():
 		print("\nGENERIC ERROR during smoke test:", repr(e))
 		raise
 
-	print(f"\nRunning ORIENT on {len(items)} items...\n")
+	print(f"\nRunning ORIENT on {len(items)} items (batched)...\n")
 
 	conn = get_conn(db_path)
 	cur = conn.cursor()
@@ -131,37 +152,43 @@ def main():
 	CREATE TABLE IF NOT EXISTS items_orient (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		raw_item_id INTEGER,
+		brand TEXT,
 		orient_json TEXT,
 		created_at TEXT NOT NULL DEFAULT (datetime('now'))
 	)
 	""")
 
-	for item in items:
-		pass  # replaced by threaded approach below
+	chunk_size = 5
+	batches = [items[i:i + chunk_size] for i in range(0, len(items), chunk_size)]
 
 	results = []
-	max_workers = 20  # send up to 20 calls in parallelo
+	max_workers = max(1, min(6, len(batches)))  # parallelize batches cautiously
 	with ThreadPoolExecutor(max_workers=max_workers) as ex:
-		futures = {ex.submit(orient_item, client, item, brand): item for item in items}
+		futures = {ex.submit(orient_batch, client, brand, batch): batch for batch in batches}
 		for fut in as_completed(futures):
-			item = futures[fut]
+			batch = futures[fut]
 			try:
-				orient = fut.result()
-				results.append((item, orient))
+				out_items = fut.result()
+				results.append((batch, out_items))
 			except Exception as e:
-				print("\nFAILED on item:", item["id"], item["title"])
+				print("\nFAILED batch containing ids:", [it.get("id") for it in batch])
 				print("ERROR:", repr(e))
 
-	# inserimento in DB (sequenziale)
-	for item, orient in results:
-		cur.execute("""
-			INSERT INTO items_orient (raw_item_id, brand, orient_json)
-			VALUES (?, ?, ?)
-		""", (item["id"], item.get("brand", ""), json.dumps(orient, ensure_ascii=False)))
+	for batch, out_items in results:
+		id_map = {it["id"]: it for it in batch}
+		for orient in out_items:
+			item_id = orient.get("item_id")
+			if item_id not in id_map:
+				continue
+			item = id_map[item_id]
+			cur.execute("""
+				INSERT INTO items_orient (raw_item_id, brand, orient_json)
+				VALUES (?, ?, ?)
+			""", (item["id"], item.get("brand", ""), json.dumps(orient, ensure_ascii=False)))
 
-		print("----")
-		print(item["title"])
-		print("→", orient.get("reputational_risk"), "| severity:", orient.get("severity"))
+			print("----")
+			print(item.get("title"))
+			print("->", orient.get("reputational_risk"), "| severity:", orient.get("severity"))
 
 	conn.commit()
 	conn.close()

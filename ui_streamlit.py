@@ -2,6 +2,7 @@ import os
 import sys
 import io
 import re
+import base64
 from openai import OpenAI
 from dotenv import load_dotenv
 import subprocess
@@ -448,6 +449,40 @@ ACTION: {row['recommended_action']}
 
 	# ACT + AI briefing
 	st.subheader("🚀 ACT", anchor=None)
+
+	# prepare unified dataframe for later reuse (brief + detailed section)
+	def _build_df_all():
+		def _maybe(name: str):
+			try:
+				return eval(name)
+			except NameError:
+				return None
+
+		candidates = [
+			_maybe("df_window"),
+			_maybe("orient_window"),
+			_maybe("raw_window"),
+			_maybe("df"),  # full ACT df
+			_maybe("orient_df"),
+			_maybe("raw_df"),
+		]
+
+		df_all_local = None
+		for cand in candidates:
+			if cand is None:
+				continue
+			if len(cand) > 0:
+				df_all_local = cand
+				break
+		if df_all_local is None:
+			df_all_local = pd.DataFrame()
+
+		if "severity" in df_all_local.columns:
+			df_all_local = df_all_local.sort_values("severity", ascending=False)
+		return df_all_local
+
+	df_all = _build_df_all()
+
 	with st.spinner("Generating executive summary..."):
 		try:
 			briefing = generate_ooda_briefing(brand, items_text)
@@ -486,6 +521,28 @@ ACTION: {row['recommended_action']}
 			page_md_lines.append(f"### 🚀 ACT")
 			page_md_lines.append(briefing)
 
+			# Append detailed report (ordered by severity desc)
+			page_md_lines.append("")
+			page_md_lines.append("### 📋 Detailed Report (top by severity)")
+			if df_all is not None and not df_all.empty:
+				df_sorted = df_all.copy()
+				if "severity" in df_sorted.columns:
+					df_sorted = df_sorted.sort_values("severity", ascending=False)
+				for _, row in df_sorted.iterrows():
+					title = row.get("title", "Untitled")
+					url = str(row.get("url", "") or "").strip()
+					if url and not url.startswith("http"):
+						# avoid malformed hrefs in docx
+						url = ""
+					severity = row.get("severity", "N/A")
+					intent = row.get("intent_framing", "N/A")
+					source = row.get("source", row.get("brand", ""))
+					source_txt = f" • source: {source}" if source else ""
+					link_title = f"[{title}]({url})" if url else title
+					page_md_lines.append(f"- {link_title} — severity **{severity}**, intent **{intent}**{source_txt}")
+			else:
+				page_md_lines.append("- No detailed items available.")
+
 			page_md = "\n".join(page_md_lines)
 
 			docx_bytes = briefing_to_docx(brand, page_md)
@@ -495,55 +552,21 @@ ACTION: {row['recommended_action']}
 		except Exception as e:
 			st.error(f"Briefing generation failed: {e}")
 
-	if st.session_state["brief_docx"]:
-		st.download_button(
-			"Download full briefing",
-			data=st.session_state["brief_docx"],
-			file_name=f"{st.session_state.get('brief_brand','brand')}_executive_briefing.docx",
-			mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-			key="download_docx_cached",
-			type="primary",
-		)
-	elif st.session_state["brief_txt"]:
-		st.download_button(
-			"Download full briefing (TXT)",
-			data=st.session_state["brief_txt"],
-			file_name=f"{st.session_state.get('brief_brand','brand')}_executive_briefing.txt",
-			mime="text/plain",
-			key="download_txt_cached",
-		)
 
 	st.markdown("---")
 	st.subheader("📊 Detailed Report", anchor=None)
 	# usa tutti i mention disponibili: preferisci dataset con tutte le colonne chiave
 	required_cols = ["published_at", "title", "url", "severity", "reputational_risk", "intent_framing"]
-	candidates = [
-		locals().get("orient_window"),
-		locals().get("df_window"),
-		locals().get("raw_window"),
-		locals().get("orient_df"),
-		locals().get("raw_df"),
-	]
-
-	df_all = None
-	for cand in candidates:
-		if cand is None:
-			continue
-		if all(col in cand.columns for col in required_cols):
-			df_all = cand
-			break
-	if df_all is None:
-		# fallback to first available non-empty candidate
-		for cand in candidates:
-			if cand is not None and len(cand) > 0:
-				df_all = cand
-				break
-	# if still None, create empty frame
-	if df_all is None:
-		df_all = pd.DataFrame(columns=required_cols)
-
-	df_all = df_all.sort_values("severity", ascending=False) if "severity" in df_all.columns else df_all
-	available = [c for c in required_cols if c in df_all.columns]
+	if "df_all" not in locals():
+		df_all = _build_df_all()
+	# drop duplicates by title+url to avoid repeated rows in detailed report
+	if not df_all.empty and {"title", "url"}.issubset(df_all.columns):
+		df_all = df_all.drop_duplicates(subset=["title", "url"], keep="first")
+	# ensure required columns exist to avoid empty table
+	for col in required_cols:
+		if col not in df_all.columns:
+			df_all[col] = None
+	available = required_cols
 	display_df = df_all[available].copy()
 
 	st.dataframe(
@@ -557,3 +580,33 @@ ACTION: {row['recommended_action']}
 
 	with col2:
 		pass
+
+# keep download available even after widget re-runs
+if st.session_state["brief_docx"] or st.session_state["brief_txt"]:
+	def _download_link(label: str, data: bytes | str, filename: str, mime: str) -> str:
+		if isinstance(data, str):
+			data_bytes = data.encode("utf-8")
+		else:
+			data_bytes = data
+		b64 = base64.b64encode(data_bytes).decode()
+		return f'<a href="data:{mime};base64,{b64}" download="{filename}" class="st-emotion-cache-link">{label}</a>'
+
+	st.subheader("Download latest briefing")
+	brand_for_name = st.session_state.get("brief_brand", "brand")
+	if st.session_state["brief_docx"]:
+		link = _download_link(
+			"Download full briefing (DOCX)",
+			st.session_state["brief_docx"],
+			f"{brand_for_name}_executive_briefing.docx",
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		)
+		st.markdown(link, unsafe_allow_html=True)
+
+	if st.session_state["brief_txt"]:
+		link = _download_link(
+			"Download full briefing (TXT)",
+			st.session_state["brief_txt"],
+			f"{brand_for_name}_executive_briefing.txt",
+			"text/plain",
+		)
+		st.markdown(link, unsafe_allow_html=True)

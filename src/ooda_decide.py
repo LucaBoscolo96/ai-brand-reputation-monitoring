@@ -225,37 +225,47 @@ def main():
 	print(f"\nRunning DECIDE for brand: {brand}")
 	print(f"Scanning last {len(records)} ORIENT items...\n")
 
+	# Pre-filtra ciò che è già deciso per evitare chiamate inutili
+	to_process = []
 	for rec in records:
 		orient_id = rec.get("orient_id")
 		raw_item_id = rec.get("raw_item_id")
-
 		if orient_id is None or raw_item_id is None:
 			continue
-
 		if already_decided(conn, int(orient_id)):
 			skipped += 1
 			continue
-
-		# Parse ORIENT json
-		orient = {}
 		try:
 			orient = json.loads(rec.get("orient_json") or "{}")
 		except Exception:
 			orient = {}
-
 		raw = {
 			"title": rec.get("title"),
 			"url": rec.get("url"),
 			"content": rec.get("content"),
 		}
+		to_process.append((orient_id, raw_item_id, raw, orient))
 
-		try:
-			decide = decide_one(client, brand, raw, orient)
-		except Exception as e:
-			print("FAILED DECIDE on:", raw.get("title"))
-			print("ERROR:", repr(e))
-			continue
+	# Decidi in parallelo (fino a ~30 worker)
+	results = []
+	max_workers = max(1, min(30, len(to_process)))
+	from concurrent.futures import ThreadPoolExecutor, as_completed
+	with ThreadPoolExecutor(max_workers=max_workers) as ex:
+		futures = {
+			ex.submit(decide_one, client, brand, raw, orient): (orient_id, raw_item_id, raw)
+			for (orient_id, raw_item_id, raw, orient) in to_process
+		}
+		for fut in as_completed(futures):
+			orient_id, raw_item_id, raw = futures[fut]
+			try:
+				decide = fut.result()
+				results.append((orient_id, raw_item_id, raw, decide))
+			except Exception as e:
+				print("FAILED DECIDE on:", raw.get("title"))
+				print("ERROR:", repr(e))
 
+	# Inserimento sequenziale (evita write race sul DB)
+	for orient_id, raw_item_id, raw, decide in results:
 		cur.execute("""
 			INSERT INTO items_decide (raw_item_id, orient_id, brand, decide_json)
 			VALUES (?, ?, ?, ?)

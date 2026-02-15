@@ -48,6 +48,13 @@ def _adapt_sql(sql: str, remote: bool) -> str:
 		s,
 		flags=re.IGNORECASE,
 	)
+	# Replace sqlite json_extract(x,'$.field') with Postgres json ->> field cast to float
+	s = re.sub(
+		r"json_extract\(\s*([\w\.]+)\s*,\s*'\$\.([\w_]+)'\s*\)",
+		r"CAST((\1)::json->>'\2' AS DOUBLE PRECISION)",
+		s,
+		flags=re.IGNORECASE,
+	)
 	return s
 
 

@@ -21,6 +21,9 @@ load_dotenv()
 # allow Streamlit secrets (e.g., cloud deploy) to populate env for OpenAI SDK
 if "OPENAI_API_KEY" not in os.environ and "OPENAI_API_KEY" in st.secrets:
 	os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+# pass Postgres URL from Streamlit secrets to env for subprocesses
+if "POSTGRES_URL" not in os.environ and "POSTGRES_URL" in st.secrets:
+	os.environ["POSTGRES_URL"] = st.secrets["POSTGRES_URL"]
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 ORCH = PROJECT_ROOT / "src" / "orchestrator.py"

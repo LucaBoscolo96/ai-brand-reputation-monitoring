@@ -53,6 +53,8 @@ class ProxyConn:
 		self.autocommit = True
 
 	def cursor(self, *args, **kwargs):
+		# ensure we don't pass duplicate cursor_factory
+		kwargs.pop("cursor_factory", None)
 		cur = self._conn.cursor(cursor_factory=RealDictCursor, *args, **kwargs)
 		return ProxyCursor(cur)
 

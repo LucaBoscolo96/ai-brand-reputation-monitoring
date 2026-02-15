@@ -229,10 +229,13 @@ if run:
 		log_box = st.empty()
 		log_text = ""
 
-		proc = subprocess.Popen(
-			[sys.executable, str(ORCH)],
-			cwd=str(PROJECT_ROOT),
-			env=env,
+	# status panel with spinner
+	status_panel = st.status("Starting…", expanded=False)
+
+	proc = subprocess.Popen(
+		[sys.executable, str(ORCH)],
+		cwd=str(PROJECT_ROOT),
+		env=env,
 			stdout=subprocess.PIPE,
 			stderr=subprocess.STDOUT,
 			text=True,
@@ -242,23 +245,23 @@ if run:
 		)
 
 		try:
-			for line in proc.stdout:
-				ln = line.strip()
-				low = ln.lower()
-				if "init db" in low:
-					status_box.info("🔄 Initializing DB…")
-				elif "collect rss" in low:
-					status_box.info("🔄 Collecting RSS feeds…")
-				elif "export raw" in low:
-					status_box.info("🔄 Exporting raw data…")
-				elif "orient (ai)" in low:
-					status_box.info("🔄 Orienting among the content…")
-				elif "decide (ai)" in low:
-					status_box.info("🔄 Deciding intent and evaluating actions…")
-				elif "act (aggregated)" in low or "act (ai)" in low:
-					status_box.info("🔄 Crafting action recommendations…")
-				elif "pipeline completed" in low:
-					status_box.success("✅ Report completed!")
+		for line in proc.stdout:
+			ln = line.strip()
+			low = ln.lower()
+			if "init db" in low:
+				status_panel.update(label="Initializing DB…", state="running")
+			elif "collect rss" in low:
+				status_panel.update(label="Collecting RSS feeds…", state="running")
+			elif "export raw" in low:
+				status_panel.update(label="Exporting raw data…", state="running")
+			elif "orient (ai)" in low:
+				status_panel.update(label="Orienting among the content…", state="running")
+			elif "decide (ai)" in low:
+				status_panel.update(label="Deciding intent and evaluating actions…", state="running")
+			elif "act (aggregated)" in low or "act (ai)" in low:
+				status_panel.update(label="Crafting action recommendations…", state="running")
+			elif "pipeline completed" in low:
+				status_panel.update(label="Report completed!", state="complete")
 
 				log_text += line
 				try:

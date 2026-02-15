@@ -498,6 +498,8 @@ ACTION: {row['recommended_action']}
 					link_title = f"[{title}]({url})" if url else title
 					dis_lines.append(f"- {link_title} — severity **{severity}**, intent **{intent}**, urgency **{urg}**")
 				st.markdown("\n".join(dis_lines))
+			else:
+				st.markdown("**No disinformation sources detected in this window.**")
 
 		st.markdown(
 			"**Intent framing legend:**\n"

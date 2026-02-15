@@ -223,14 +223,12 @@ if run:
 	env["PYTHONUNBUFFERED"] = "1"
 	env["PYTHONIOENCODING"] = "utf-8"
 
-	status_box = st.info("Starting…")
+	status_box = st.empty()
+	status_box.write("🔄 Starting…")
 
 	with st.expander("Logs", expanded=False):
 		log_box = st.empty()
 		log_text = ""
-
-	# status panel with spinner
-	status_panel = st.status("Starting…", expanded=False)
 
 	proc = subprocess.Popen(
 		[sys.executable, str(ORCH)],
@@ -249,19 +247,19 @@ if run:
 			ln = line.strip()
 			low = ln.lower()
 			if "init db" in low:
-				status_panel.update(label="Initializing DB…", state="running")
+				status_box.write("🔄 Initializing DB…")
 			elif "collect rss" in low:
-				status_panel.update(label="Collecting RSS feeds…", state="running")
+				status_box.write("🔄 Collecting RSS feeds…")
 			elif "export raw" in low:
-				status_panel.update(label="Exporting raw data…", state="running")
+				status_box.write("🔄 Exporting raw data…")
 			elif "orient (ai)" in low:
-				status_panel.update(label="Orienting among the content…", state="running")
+				status_box.write("🔄 Orienting among the content…")
 			elif "decide (ai)" in low:
-				status_panel.update(label="Deciding intent and evaluating actions…", state="running")
+				status_box.write("🔄 Deciding intent and evaluating actions…")
 			elif "act (aggregated)" in low or "act (ai)" in low:
-				status_panel.update(label="Crafting action recommendations…", state="running")
+				status_box.write("🔄 Crafting action recommendations…")
 			elif "pipeline completed" in low:
-				status_panel.update(label="Report completed!", state="complete")
+				status_box.write("✅ Report completed!")
 
 			log_text += line
 			try:

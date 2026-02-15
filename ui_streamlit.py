@@ -16,6 +16,7 @@ st.session_state.setdefault("brief_docx", None)
 st.session_state.setdefault("brief_txt", None)
 st.session_state.setdefault("brief_brand", None)
 st.session_state.setdefault("authed", False)
+st.session_state.setdefault("app_pwd", "")
 
 load_dotenv()
 
@@ -195,7 +196,8 @@ if APP_PASSWORD:
 		pwd_input = st.text_input("Enter access password to use the app", type="password", key="app_pwd")
 		if pwd_input == APP_PASSWORD:
 			st.session_state["authed"] = True
-			st.session_state["app_pwd"] = ""
+			# reset stored password without touching session_state keys directly to avoid Streamlit API errors
+			st.session_state.update({"app_pwd": ""})
 			st.experimental_rerun()
 		elif pwd_input:
 			st.error("Incorrect password.")

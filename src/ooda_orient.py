@@ -76,7 +76,26 @@ def orient_batch(client: OpenAI, brand: str, batch: List[Dict]) -> List[Dict]:
 		)
 
 	prompt = {
-		"instruction": "For each item return a JSON object with key 'items' (array) and include all fields; keep item_id to match inputs.",
+		"instruction": "\n".join([
+			"ROLE: You are the ORIENT module of an OODA Loop early-warning system for brand reputation monitoring.",
+			"GOAL: Transform noisy media items into structured situational awareness for the next DECIDE step.",
+			"SCOPE: Use ONLY the provided title/snippet/url. Do NOT use external knowledge, browsing, or assumptions about the brand.",
+			"OUTPUT: Return ONLY valid JSON with top-level key 'items' as an array. No prose.",
+			"FRAMEWORK FIDELITY (OODA): This is ORIENT only. Do not propose actions, strategies, PR statements, or legal advice.",
+			"EVIDENCE RULES:",
+			"- Base the claim_summary on explicit statements in the snippet/title; do not invent facts.",
+			"- If the snippet does not contain a concrete claim about the brand, set narrative_category='other', reputational_risk='low', severity<=15, confidence<=0.4.",
+			"- If the item is clearly about other entities (not the brand), treat as noise: reputational_risk='low', severity<=10, confidence<=0.3, narrative_category='other'.",
+			"LABELING RULES:",
+			"- narrative_category must be one of: supply_chain|cultural_controversy|financial|fake_news|other.",
+			"- reputational_risk must be one of: low|medium|high.",
+			"- severity is an integer 0-100. confidence is 0-1 float.",
+			"VERIFICATION:",
+			"- verification_steps must be exactly 3 short bullets focused on how to verify the claim (e.g., check primary source, check official statement, cross-check reputable outlets).",
+			"CONSISTENCY:",
+			"- Higher severity requires higher confidence OR clear harm indicators; if confidence<0.5 keep severity<=50.",
+			"- If the snippet indicates the company already took action (e.g., seizure by authorities / enforcement already happened), do NOT escalate severity automatically; reflect it in claim_summary and keep verification focused.",
+		]),
 		"brand": brand,
 		"items": parts,
 		"schema": {

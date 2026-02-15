@@ -28,6 +28,13 @@ def _adapt_sql(sql: str, remote: bool) -> str:
 	s = s.replace("INTEGER PRIMARY KEY", "SERIAL PRIMARY KEY")
 	s = s.replace("DEFAULT (datetime('now'))", "DEFAULT CURRENT_TIMESTAMP")
 	s = re.sub(r"datetime\\('now'\\)", "CURRENT_TIMESTAMP", s)
+	# SQLite datetime('now','-7 days') -> Postgres NOW() - INTERVAL '7 days'
+	s = re.sub(
+		r"datetime\('now','-([0-9]+)\s+days?'\)",
+		r"NOW() - INTERVAL '\1 days'",
+		s,
+		flags=re.IGNORECASE,
+	)
 	return s
 
 

@@ -142,11 +142,6 @@ def compute_stats(items: List[Dict]) -> Dict:
 	risks = [str(i.get("reputational_risk") or "low") for i in items]
 	severities = [i.get("severity") for i in items if isinstance(i.get("severity"), (int, float))]
 
-	intent_counts = Counter(intents)
-	urgency_counts = Counter(urgencies)
-	cat_counts = Counter(cats)
-	risk_counts = Counter(risks)
-
 	severity_stats = {}
 	if severities:
 		severity_stats = {
@@ -156,6 +151,18 @@ def compute_stats(items: List[Dict]) -> Dict:
 		}
 	else:
 		severity_stats = {"min": None, "max": None, "avg": None}
+
+	# Bucket severities so ORIENT high/medium/low reflects numeric scores
+	severity_buckets = Counter(
+		"high" if s >= 70 else "medium" if s >= 40 else "low"
+		for s in severities
+	)
+
+	intent_counts = Counter(intents)
+	urgency_counts = Counter(urgencies)
+	cat_counts = Counter(cats)
+	# Merge declared reputational_risk with severity buckets to avoid mismatches
+	risk_counts = Counter(risks) + severity_buckets
 
 	# top 5 items by severity
 	top_by_severity = sorted(
